@@ -53,8 +53,28 @@ def add_to_cart(request, product_id):
 
 def cart(request):
     cart_items = Cart.objects.filter(user=request.user)
-    total = sum(item.product.price * item.quantity for item in cart_items)
-    return render(request, "store/cart.html", {"cart_items": cart_items, "total": total})
+    for item in cart_items:
+        item.subtotal = item.product.price * item.quantity
+    total = sum(item.subtotal for item in cart_items)
+    return render(request, "store/cart.html", {
+        "cart_items": cart_items,
+        "total": total
+    })
+
+def update_cart(request, cart_id, action):
+    cart_item = get_object_or_404(Cart, id=cart_id, user=request.user)
+    if action == "increase":
+        cart_item.quantity += 1
+    elif action == "decrease" and cart_item.quantity > 1:
+        cart_item.quantity -= 1
+    cart_item.save()
+    return redirect("cart")
+
+def remove_from_cart(request, cart_id):
+    cart_item = get_object_or_404(Cart, id=cart_id, user=request.user)
+    cart_item.delete()
+    return redirect("cart")
+
 
 def checkout(request):
     cart_items = Cart.objects.filter(user=request.user)
