@@ -1,0 +1,25 @@
+{% extends "store/base.html" %}
+
+{% block title %}GoldenAura 960 - Home{% endblock %}
+
+{% block content %}
+<div class="text-center my-5">
+  <h1 class="display-4">Welcome to GoldenAura 960</h1>
+  <p class="lead">Discover timeless jewellery crafted with elegance</p>
+  <a href="{% url 'product_list' %}" class="btn btn-gold">Shop Collection</a>
+</div>
+
+<div class="row mt-5">
+  {% for category in categories %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">{{ category.name }}</h5>
+          <p class="card-text">{{ category.description }}</p>
+          <a href="{% url 'product_list' %}?category={{ category.id }}" class="btn btn-gold">Explore</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

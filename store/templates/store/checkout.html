@@ -1,0 +1,33 @@
+{% extends "store/base.html" %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Checkout</h2>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Subtotal</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in cart_items %}
+    <tr>
+      <td>{{ item.product.name }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>₹{{ item.product.price }}</td>
+      <td>₹{{ item.product.price|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<h4>Total: ₹{{ total }}</h4>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-gold">Place Order (Cash on Delivery)</button>
+</form>
+{% endblock %}

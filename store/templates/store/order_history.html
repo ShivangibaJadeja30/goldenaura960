@@ -1,0 +1,14 @@
+{% extends "store/base.html" %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+<h2>Order History</h2>
+<ul class="list-group">
+  {% for order in orders %}
+    <li class="list-group-item">
+      Order #{{ order.id }} - {{ order.status }} - {{ order.created_at|date:"M d, Y" }}
+    </li>
+  {% empty %}
+    <li class="list-group-item">No orders yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

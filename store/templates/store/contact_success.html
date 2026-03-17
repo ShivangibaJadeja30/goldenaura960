@@ -1,0 +1,9 @@
+{% extends "store/base.html" %}
+{% block title %}Thank You{% endblock %}
+{% block content %}
+<div class="text-center my-5">
+  <h2>Thank you for your feedback!</h2>
+  <p>We appreciate your input and will get back to you soon.</p>
+  <a href="{% url 'home' %}" class="btn btn-gold">Return Home</a>
+</div>
+{% endblock %}

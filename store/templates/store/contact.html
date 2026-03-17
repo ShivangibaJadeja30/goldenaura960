@@ -1,0 +1,10 @@
+{% extends "store/base.html" %}
+{% block title %}Contact Us{% endblock %}
+{% block content %}
+<h2>Send us your feedback</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-gold">Submit</button>
+</form>
+{% endblock %}
