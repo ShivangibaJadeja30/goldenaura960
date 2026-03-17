@@ -8,6 +8,51 @@ from django.conf import settings
 from .models import Category, Product, Cart, Order
 from .forms import SignupForm, FeedbackForm
 
+# store/views.py
+from django.contrib.auth.decorators import login_required
+from .forms import UserProfileForm
+from .models import UserProfile
+
+from django.shortcuts import render
+from .models import Product
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import UserForm, UserProfileForm
+
+
+@login_required
+def profile(request):
+    # Ensure the user has a profile record
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        user_form = UserForm(request.POST, instance=request.user)
+        profile_form = UserProfileForm(request.POST, instance=profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect("profile")
+    else:
+        user_form = UserForm(instance=request.user)
+        profile_form = UserProfileForm(instance=profile)
+
+    return render(request, "store/profile.html", {
+        "user_form": user_form,
+        "profile_form": profile_form
+    })
+
+def search_results(request):
+    query = request.GET.get('q')
+    results = Product.objects.filter(name__icontains=query)
+    return render(request, 'store/search_results.html', {'query': query, 'results': results})
+
+
 def home(request):
     categories = Category.objects.all()
     return render(request, "store/home.html", {"categories": categories})

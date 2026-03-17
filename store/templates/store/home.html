@@ -1,8 +1,87 @@
+
 {% extends "store/base.html" %}
+{% load static %}
 
 {% block title %}GoldenAura 960 - Home{% endblock %}
 
 {% block content %}
+<style>
+    body {
+  background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: 'Poppins', sans-serif;
+}
+
+.hero {
+  padding: 80px 20px;
+  text-align: center;
+  color: #3e2f1c;
+}
+
+.hero h1 {
+  font-size: 48px;
+  font-family: 'Great Vibes', cursive;
+  color: #b38b59;
+}
+
+.hero p {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.btn-gold {
+  background-color: #b38b59;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: bold;
+  margin-top: 20px;
+  transition: 0.3s;
+}
+
+.btn-gold:hover {
+  background-color: #9c7645;
+}
+
+</style>
+
+
+<div id="homeCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active" data-bs-interval="4000">
+      <img src="{% static 'store/images/b.png' %}" class="d-block w-100" alt="Elegant Ring">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Timeless Elegance</h5>
+        <p>Explore our handcrafted ring collection</p>
+      </div>
+    </div>
+    <div class="carousel-item" data-bs-interval="4000">
+      <img src="{% static 'store/images/c.png' %}" class="d-block w-100" alt="Necklace">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Graceful Necklaces</h5>
+        <p>Jewels that speak your story</p>
+      </div>
+    </div>
+    <div class="carousel-item" data-bs-interval="4000">
+      <img src="{% static 'store/images/d.png' %}" class="d-block w-100" alt="Earrings">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Radiant Earrings</h5>
+        <p>Elegance in every detail</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+
+
 <div class="text-center my-5">
   <h1 class="display-4">Welcome to GoldenAura 960</h1>
   <p class="lead">Discover timeless jewellery crafted with elegance</p>

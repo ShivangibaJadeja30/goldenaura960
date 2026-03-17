@@ -1,6 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    payment_option = models.CharField(
+        max_length=50,
+        choices=[
+            ("COD", "Cash on Delivery"),
+            ("CARD", "Credit/Debit Card"),
+            ("UPI", "UPI"),
+            ("NETBANKING", "Net Banking"),
+        ],
+        default="COD"
+    )
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+    
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
 
