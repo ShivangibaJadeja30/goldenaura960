@@ -43,11 +43,20 @@ class Cart(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Paid", "Paid"),
+        ("Cancelled", "Cancelled"),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    products = models.ManyToManyField(Cart)
+    products = models.ManyToManyField(Product)
     payment_method = models.CharField(max_length=50)
-    status = models.CharField(max_length=50, default="Pending")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.user.username}"
+
 
 class Feedback(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
