@@ -4,23 +4,29 @@
   <h2>My Profile</h2>
   <div class="card" style="max-width: 600px;">
     <div class="card-body">
-      <form method="POST">
-        {% csrf_token %}
-        <h5>Account Info</h5>
-        {{ user_form.as_p }}
-        <h5>Profile Info</h5>
-        {{ profile_form.as_p }}
-        <button type="submit" class="btn btn-warning">Save Changes</button>
-      </form>
 
-      {% if user_form.errors %}
-        <div class="alert alert-danger">{{ user_form.errors }}</div>
+      {% if edit_mode %}
+        <!-- Edit Mode -->
+        <form method="POST">
+          {% csrf_token %}
+          <h5>Account Info</h5>
+          {{ user_form.as_p }}
+          <h5>Profile Info</h5>
+          {{ profile_form.as_p }}
+          <button type="submit" class="btn btn-warning">Save Changes</button>
+          <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+      {% else %}
+        <!-- View Mode -->
+        <p><strong>Username:</strong> {{ request.user.username }}</p>
+        <p><strong>Email:</strong> {{ request.user.email }}</p>
+        <p><strong>Address:</strong> {{ profile.address }}</p>
+        <p><strong>Phone:</strong> {{ profile.phone }}</p>
+        <p><strong>Payment Option:</strong> {{ profile.payment_option }}</p>
+        <a href="{% url 'profile' %}?edit=true" class="btn btn-warning">Edit Profile</a>
       {% endif %}
-      {% if profile_form.errors %}
-        <div class="alert alert-danger">{{ profile_form.errors }}</div>
-      {% endif %}
+
     </div>
   </div>
 </div>
 {% endblock %}
-

@@ -1,38 +1,37 @@
 {% extends "store/base.html" %}
-{% block title %}Products - GoldenAura 960{% endblock %}
-
 {% block content %}
-<h2 class="mb-4">Our Jewellery Collection</h2>
+<div class="container mt-4">
+  <h2>Products{% if selected_category %} in {{ selected_category.name }}{% endif %}</h2>
 
-<!-- Simple category filter links -->
-<ul class="nav mb-3">
-  <li class="nav-item"><a class="nav-link" href="{% url 'product_list' %}">All</a></li>
-  {% for category in categories %}
-    <li class="nav-item">
-      <a class="nav-link {% if selected_category == category %}active{% endif %}" 
-         href="{% url 'product_list_by_category' category.id %}">
-        {{ category.name }}
+  <!-- Category Menu -->
+  <div class="mb-3">
+    <strong>Categories:</strong>
+    {% for cat in categories %}
+      <a href="{% url 'product_list_by_category' cat.id %}" 
+         class="btn btn-outline-warning btn-sm {% if selected_category == cat %}active{% endif %}">
+        {{ cat.name }}
       </a>
-    </li>
-  {% endfor %}
-</ul>
+    {% endfor %}
+  </div>
 
-<!-- Products Grid -->
-<div class="row">
-  {% for product in products %}
-    <div class="col-md-4 mb-4">
-      <div class="card h-100">
-        <img src="{{ product.image.url }}" alt="{{ product.name }}"
-             class="card-img-top" style="height:200px; object-fit:cover;">
-        <div class="card-body text-center">
-          <h5 class="card-title">{{ product.name }}</h5>
-          <p class="card-text">₹{{ product.price }}</p>
-          <a href="{% url 'add_to_cart' product.id %}" class="btn btn-gold">Add to Cart</a>
+  <!-- Products -->
+  <div class="row">
+    {% for product in products %}
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text">{{ product.description|truncatewords:15 }}</p>
+            <p><strong>₹{{ product.price }}</strong></p>
+            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-warning">Add to Cart</a>
+          </div>
         </div>
       </div>
-    </div>
-  {% empty %}
-    <p>No products found in this category.</p>
-  {% endfor %}
+    {% empty %}
+      <p>No products found in this category.</p>
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}
+

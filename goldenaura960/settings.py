@@ -128,3 +128,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
+
+
+RAZORPAY_KEY_ID = "your_key_id"
+RAZORPAY_KEY_SECRET = "your_key_secret"
+
+
+

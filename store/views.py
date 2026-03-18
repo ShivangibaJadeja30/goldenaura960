@@ -24,27 +24,29 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import UserForm, UserProfileForm
 
-
 @login_required
 def profile(request):
-    # Ensure the user has a profile record
     profile, created = UserProfile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
         user_form = UserForm(request.POST, instance=request.user)
         profile_form = UserProfileForm(request.POST, instance=profile)
-
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            return redirect("profile")
+            return redirect("profile")  # after saving, go back to view mode
     else:
         user_form = UserForm(instance=request.user)
         profile_form = UserProfileForm(instance=profile)
 
+    # Check if user clicked "edit"
+    edit_mode = request.GET.get("edit") == "true"
+
     return render(request, "store/profile.html", {
         "user_form": user_form,
-        "profile_form": profile_form
+        "profile_form": profile_form,
+        "profile": profile,
+        "edit_mode": edit_mode
     })
 
 def search_results(request):
@@ -71,17 +73,22 @@ def product_list(request):
         "selected_category": None
     })
 
+from django.shortcuts import render, get_object_or_404
+from .models import Category, Product
+
 def product_list_by_category(request, category_id):
-    # Show products only from one category
+    # Get the selected category
     category = get_object_or_404(Category, id=category_id)
-    products = Product.objects.filter(category=category)
+    # Get products in that category, sorted by name
+    products = Product.objects.filter(category=category).order_by("name")
+    # Get all categories for sidebar/menu
     categories = Category.objects.all()
+
     return render(request, "store/product_list.html", {
         "products": products,
         "categories": categories,
         "selected_category": category
     })
-
 
 
 def add_to_cart(request, product_id):
@@ -182,3 +189,41 @@ def contact(request):
     else:
         form = FeedbackForm()
     return render(request, "store/contact.html", {"form": form})
+
+import razorpay
+from django.conf import settings
+
+@login_required
+def checkout(request):
+    cart_items = Cart.objects.filter(user=request.user)
+    total = sum(item.product.price * item.quantity for item in cart_items)
+
+    # Build UPI deep link dynamically
+    upi_id = "shivangiba@oksbi"   # replace with your real UPI ID
+    payee_name = "GoldenAura960"
+    upi_link = f"upi://pay?pa={upi_id}&pn={payee_name}&am={total}&cu=INR"
+
+    if request.method == "POST":
+        # User confirms payment manually
+        order = Order.objects.create(
+            user=request.user,
+            payment_method="UPI (Manual)",
+            status="Pending"  # mark Paid after verifying
+        )
+        order.products.set(cart_items)
+        cart_items.delete()
+        return render(request, "store/order_success.html", {"order": order})
+
+    return render(request, "store/checkout.html", {
+        "cart_items": cart_items,
+        "total": total,
+        "upi_link": upi_link
+    })
+
+
+
+
+
+
+
+
