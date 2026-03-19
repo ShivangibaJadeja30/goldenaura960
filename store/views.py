@@ -59,6 +59,14 @@ def home(request):
     categories = Category.objects.all()
     return render(request, "store/home.html", {"categories": categories})
 
+
+from django.shortcuts import render
+from .models import Product
+
+def product_list(request):
+    products = Product.objects.all()
+    return render(request, "store/product_list.html", {"products": products})
+
 # store/views.py
 from django.shortcuts import render, get_object_or_404
 from .models import Category, Product
@@ -220,10 +228,59 @@ def checkout(request):
         "upi_link": upi_link
     })
 
+from django.shortcuts import redirect
+from .models import Favorite, Product
+
+def add_to_favorites(request, product_id):
+    product = Product.objects.get(id=product_id)
+    Favorite.objects.get_or_create(user=request.user, product=product)
+    return redirect("favorites_list")
+
+def favorites_list(request):
+    favorites = Favorite.objects.filter(user=request.user)
+    return render(request, "store/favorites.html", {"favorites": favorites})
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Product, Review
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == "POST":
+        rating = request.POST.get("rating")
+        comment = request.POST.get("comment")
+
+        if rating and comment:
+            # Prevent duplicate reviews: one review per user per product
+            existing_review = Review.objects.filter(product=product, user=request.user).first()
+            if existing_review:
+                # Update the existing review instead of creating a new one
+                existing_review.rating = rating
+                existing_review.comment = comment
+                existing_review.save()
+            else:
+                # Create a new review
+                Review.objects.create(
+                    product=product,
+                    user=request.user,
+                    rating=rating,
+                    comment=comment
+                )
+
+        return redirect("product_detail", product_id=product.id)
+
+    # If not POST, just redirect back
+    return redirect("product_detail", product_id=product.id)
 
 
+from django.shortcuts import render, get_object_or_404
+from .models import Product
 
-
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, "store/product_detail.html", {"product": product})
 
 
 

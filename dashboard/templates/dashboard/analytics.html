@@ -1,0 +1,42 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<h2>Analytics Dashboard</h2>
+<div class="row">
+  <div class="col-md-6">
+    <canvas id="salesChart"></canvas>
+  </div>
+  <div class="col-md-6">
+    <canvas id="reviewsChart"></canvas>
+  </div>
+</div>
+
+<!-- Load Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Initialize chart objects
+  const salesCtx = document.getElementById('salesChart');
+  const salesChart = new Chart(salesCtx, {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Sales', data: [], borderColor: '#28a745', fill: false }] }
+  });
+
+  const reviewsCtx = document.getElementById('reviewsChart');
+  const reviewsChart = new Chart(reviewsCtx, {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Reviews', data: [], backgroundColor: '#ffc107' }] }
+  });
+
+  // 🔹 Add your async function here
+  async function loadSalesData() {
+    const response = await fetch("{% url 'sales_data_api' %}");
+    const data = await response.json();
+    salesChart.data.labels = data.map(d => d.created_at);
+    salesChart.data.datasets[0].data = data.map(d => d.total);
+    salesChart.update();
+  }
+
+  setInterval(loadSalesData, 5000); // refresh every 5 seconds
+</script>
+{% endblock %}

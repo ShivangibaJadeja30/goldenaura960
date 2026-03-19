@@ -1,0 +1,15 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.dashboard_home, name="dashboard_home"),
+    path("orders/", views.order_list, name="order_list"),
+    path("reviews/", views.review_list, name="review_list"),   # <-- this must exist
+    path("analytics/", views.analytics_dashboard, name="analytics_dashboard"),
+    path("api/sales-data/", views.sales_data_api, name="sales_data_api"),
+    path("api/review-data/", views.review_data_api, name="review_data_api"),
+    path("reviews/delete/<int:review_id>/", views.delete_review, name="delete_review"),
+    path("reviews/edit/<int:review_id>/", views.edit_review, name="edit_review"),
+]
+
+

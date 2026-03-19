@@ -30,7 +30,7 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'order_history' %}">Orders</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
-
+          <li class="nav-item"><a class="nav-link" href="{% url 'favorites_list' %}">My Favorites</a></li>
           <!-- Dynamic Account Section -->
           {% if user.is_authenticated %}
             <li class="nav-item dropdown">

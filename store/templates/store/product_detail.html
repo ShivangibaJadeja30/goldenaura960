@@ -1,0 +1,68 @@
+{% extends "store/base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <!-- Product Image -->
+    <div class="col-md-6">
+      <img src="{{ product.image.url }}" class="img-fluid rounded shadow" alt="{{ product.name }}">
+    </div>
+
+    <!-- Product Details -->
+    <div class="col-md-6">
+      <h2>{{ product.name }}</h2>
+      <p class="text-muted">Category: {{ product.category }}</p>
+      <h4 class="text-success">₹{{ product.price }}</h4>
+      <p>{{ product.description }}</p>
+
+      <!-- Action Buttons -->
+      <a href="{% url 'add_to_favorites' product.id %}" class="btn btn-outline-danger me-2">
+        ❤️ Add to Favorites
+      </a>
+      <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">
+  🛒 Add to Cart
+</a>
+
+
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="mt-5">
+    <h4>Customer Reviews</h4>
+    <div class="list-group mb-4">
+      {% for review in product.reviews.all %}
+      <div class="list-group-item">
+        <strong>{{ review.user.username }}</strong>
+        <span class="text-warning">{{ review.rating }}★</span>
+        <p>{{ review.comment }}</p>
+        <small class="text-muted">{{ review.created_at|date:"d M Y, H:i" }}</small>
+      </div>
+      {% empty %}
+      <p>No reviews yet. Be the first to review!</p>
+      {% endfor %}
+    </div>
+
+    <!-- Add Review Form -->
+    <form method="post" action="{% url 'add_review' product.id %}" class="card p-3">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="rating" class="form-label">Rating</label>
+        <select name="rating" id="rating" class="form-select">
+          <option value="5">★★★★★</option>
+          <option value="4">★★★★</option>
+          <option value="3">★★★</option>
+          <option value="2">★★</option>
+          <option value="1">★</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="comment" class="form-label">Comment</label>
+        <textarea name="comment" id="comment" class="form-control"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
