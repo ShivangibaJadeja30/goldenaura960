@@ -10,6 +10,10 @@ urlpatterns = [
     path("api/review-data/", views.review_data_api, name="review_data_api"),
     path("reviews/delete/<int:review_id>/", views.delete_review, name="delete_review"),
     path("reviews/edit/<int:review_id>/", views.edit_review, name="edit_review"),
-]
+    path("orders/update/<int:order_id>/", views.update_order_status, name="update_order_status"),
+    path("api/favorite-data/", views.favorite_data_api, name="favorite_data_api"),
+
+
+    ]
 
 

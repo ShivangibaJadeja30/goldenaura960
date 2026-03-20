@@ -3,23 +3,45 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">Our Jewellery Collection</h2>
+  <h2 class="mb-4 text-center">🛍️ Our Jewellery Collection</h2>
+
+  <!-- Category Buttons -->
+  <div class="mb-4 text-center">
+    {% for category in categories %}
+      <a href="{% url 'product_list_by_category' category.id %}"
+         class="btn btn-outline-primary btn-sm mx-1
+         {% if selected_category and selected_category.id == category.id %}active{% endif %}">
+        {{ category.name }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Products Grid -->
   <div class="row">
     {% for product in products %}
-    <div class="col-md-4 mb-4">
-      <div class="card h-100">
-        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-        <div class="card-body">
-          <h5 class="card-title">{{ product.name }}</h5>
-          <p class="card-text">₹{{ product.price }}</p>
-          <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">View Details</a>
-          <a href="{% url 'add_to_favorites' product.id %}" class="btn btn-outline-danger">❤️ Favorite</a>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm rounded">
+          <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+          <div class="card-body text-center">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text text-muted">₹{{ product.price }}</p>
+            <div class="d-flex justify-content-center gap-2">
+              <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-info-circle"></i> Details
+              </a>
+              <a href="{% url 'add_to_favorites' product.id %}" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-heart"></i> Favorite
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
     {% empty %}
-    <p>No products available.</p>
+      <p class="text-center text-muted">No products available.</p>
     {% endfor %}
   </div>
 </div>
 {% endblock %}
+
+
+

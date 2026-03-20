@@ -1,14 +1,40 @@
 {% extends "store/base.html" %}
 {% block title %}My Orders{% endblock %}
+
 {% block content %}
-<h2>Order History</h2>
-<ul class="list-group">
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">📦 My Orders</h2>
+
   {% for order in orders %}
-    <li class="list-group-item">
-      Order #{{ order.id }} - {{ order.status }} - {{ order.created_at|date:"M d, Y" }}
-    </li>
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <!-- Order Info -->
+        <h5 class="card-title">Order #{{ order.id }}</h5>
+        <p class="card-text">Placed on {{ order.created_at|date:"M d, Y H:i" }}</p>
+        <p class="card-text"><strong>Status:</strong> {{ order.status }}</p>
+
+        <!-- Tracking Progress Bar -->
+        <div class="progress mb-3" style="height: 20px;">
+  {% if order.status == "Pending" %}
+    <div class="progress-bar bg-warning" style="width: 25%;">Pending</div>
+  {% elif order.status == "Paid" %}
+    <div class="progress-bar bg-secondary" style="width: 50%;">Paid</div>
+  {% elif order.status == "Shipped" %}
+    <div class="progress-bar bg-info" style="width: 75%;">Shipped</div>
+  {% elif order.status == "Delivered" %}
+    <div class="progress-bar bg-success" style="width: 100%;">Delivered</div>
+  {% elif order.status == "Cancelled" %}
+    <div class="progress-bar bg-danger" style="width: 100%;">Cancelled</div>
+  {% endif %}
+</div>
+
+
+        <!-- Products in Order -->
+
+      </div>
+    </div>
   {% empty %}
-    <li class="list-group-item">No orders yet.</li>
+    <p class="text-center text-muted">You have no orders yet.</p>
   {% endfor %}
-</ul>
+</div>
 {% endblock %}

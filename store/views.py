@@ -5,25 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .models import Category, Product, Cart, Order
-from .forms import SignupForm, FeedbackForm
+from .models import Category, Product, Cart, Order, UserProfile, Favorite, Review
+from .forms import SignupForm, FeedbackForm, UserForm, UserProfileForm
 
-# store/views.py
-from django.contrib.auth.decorators import login_required
-from .forms import UserProfileForm
-from .models import UserProfile
-
-from django.shortcuts import render
-from .models import Product
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-
-
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .forms import UserForm, UserProfileForm
-
+# ------------------ User Profile ------------------
 @login_required
 def profile(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -34,14 +19,12 @@ def profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            return redirect("profile")  # after saving, go back to view mode
+            return redirect("profile")
     else:
         user_form = UserForm(instance=request.user)
         profile_form = UserProfileForm(instance=profile)
 
-    # Check if user clicked "edit"
     edit_mode = request.GET.get("edit") == "true"
-
     return render(request, "store/profile.html", {
         "user_form": user_form,
         "profile_form": profile_form,
@@ -49,30 +32,19 @@ def profile(request):
         "edit_mode": edit_mode
     })
 
+# ------------------ Search ------------------
 def search_results(request):
     query = request.GET.get('q')
     results = Product.objects.filter(name__icontains=query)
     return render(request, 'store/search_results.html', {'query': query, 'results': results})
 
-
+# ------------------ Home ------------------
 def home(request):
     categories = Category.objects.all()
     return render(request, "store/home.html", {"categories": categories})
 
-
-from django.shortcuts import render
-from .models import Product
-
+# ------------------ Products ------------------
 def product_list(request):
-    products = Product.objects.all()
-    return render(request, "store/product_list.html", {"products": products})
-
-# store/views.py
-from django.shortcuts import render, get_object_or_404
-from .models import Category, Product
-
-def product_list(request):
-    # Show all products
     products = Product.objects.all()
     categories = Category.objects.all()
     return render(request, "store/product_list.html", {
@@ -81,46 +53,39 @@ def product_list(request):
         "selected_category": None
     })
 
-from django.shortcuts import render, get_object_or_404
-from .models import Category, Product
-
 def product_list_by_category(request, category_id):
-    # Get the selected category
     category = get_object_or_404(Category, id=category_id)
-    # Get products in that category, sorted by name
     products = Product.objects.filter(category=category).order_by("name")
-    # Get all categories for sidebar/menu
     categories = Category.objects.all()
-
     return render(request, "store/product_list.html", {
         "products": products,
         "categories": categories,
         "selected_category": category
     })
 
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, "store/product_detail.html", {"product": product})
 
+# ------------------ Cart ------------------
+@login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    if request.user.is_authenticated:
-        cart_item, created = Cart.objects.get_or_create(
-            user=request.user,
-            product=product,
-        )
-        if not created:
-            cart_item.quantity += 1
-            cart_item.save()
+    cart_item, created = Cart.objects.get_or_create(user=request.user, product=product)
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
     return redirect("cart")
 
+@login_required
 def cart(request):
     cart_items = Cart.objects.filter(user=request.user)
     for item in cart_items:
         item.subtotal = item.product.price * item.quantity
     total = sum(item.subtotal for item in cart_items)
-    return render(request, "store/cart.html", {
-        "cart_items": cart_items,
-        "total": total
-    })
+    return render(request, "store/cart.html", {"cart_items": cart_items, "total": total})
 
+@login_required
 def update_cart(request, cart_id, action):
     cart_item = get_object_or_404(Cart, id=cart_id, user=request.user)
     if action == "increase":
@@ -130,31 +95,46 @@ def update_cart(request, cart_id, action):
     cart_item.save()
     return redirect("cart")
 
+@login_required
 def remove_from_cart(request, cart_id):
     cart_item = get_object_or_404(Cart, id=cart_id, user=request.user)
     cart_item.delete()
     return redirect("cart")
 
-
+# ------------------ Checkout ------------------
+@login_required
 def checkout(request):
     cart_items = Cart.objects.filter(user=request.user)
+    total = sum(item.product.price * item.quantity for item in cart_items)
+
+    upi_id = "shivangiba@oksbi"   # replace with your real UPI ID
+    payee_name = "GoldenAura960"
+    upi_link = f"upi://pay?pa={upi_id}&pn={payee_name}&am={total}&cu=INR"
+
     if request.method == "POST":
         order = Order.objects.create(
             user=request.user,
-            payment_method="COD",
+            payment_method="UPI (Manual)",
             status="Pending"
         )
-        order.products.set(cart_items)
+        order.products.set(cart_items.values_list("product", flat=True))
         cart_items.delete()
         return render(request, "store/order_success.html", {"order": order})
-    total = sum(item.product.price * item.quantity for item in cart_items)
-    return render(request, "store/checkout.html", {"cart_items": cart_items, "total": total})
+
+    return render(request, "store/checkout.html", {
+        "cart_items": cart_items,
+        "total": total,
+        "upi_link": upi_link
+    })
 
 @login_required
 def order_history(request):
     orders = Order.objects.filter(user=request.user).order_by("-created_at")
     return render(request, "store/order_history.html", {"orders": orders})
 
+
+
+# ------------------ Auth ------------------
 def login_signup(request):
     login_form = AuthenticationForm()
     signup_form = SignupForm()
@@ -178,6 +158,7 @@ def login_signup(request):
         "signup_form": signup_form
     })
 
+# ------------------ Contact ------------------
 def contact(request):
     if request.method == "POST":
         form = FeedbackForm(request.POST)
@@ -186,7 +167,6 @@ def contact(request):
             if request.user.is_authenticated:
                 feedback.user = request.user
             feedback.save()
-            # Optional email notification
             send_mail(
                 "New Feedback Received",
                 feedback.message,
@@ -198,52 +178,19 @@ def contact(request):
         form = FeedbackForm()
     return render(request, "store/contact.html", {"form": form})
 
-import razorpay
-from django.conf import settings
-
+# ------------------ Favorites ------------------
 @login_required
-def checkout(request):
-    cart_items = Cart.objects.filter(user=request.user)
-    total = sum(item.product.price * item.quantity for item in cart_items)
-
-    # Build UPI deep link dynamically
-    upi_id = "shivangiba@oksbi"   # replace with your real UPI ID
-    payee_name = "GoldenAura960"
-    upi_link = f"upi://pay?pa={upi_id}&pn={payee_name}&am={total}&cu=INR"
-
-    if request.method == "POST":
-        # User confirms payment manually
-        order = Order.objects.create(
-            user=request.user,
-            payment_method="UPI (Manual)",
-            status="Pending"  # mark Paid after verifying
-        )
-        order.products.set(cart_items)
-        cart_items.delete()
-        return render(request, "store/order_success.html", {"order": order})
-
-    return render(request, "store/checkout.html", {
-        "cart_items": cart_items,
-        "total": total,
-        "upi_link": upi_link
-    })
-
-from django.shortcuts import redirect
-from .models import Favorite, Product
-
 def add_to_favorites(request, product_id):
-    product = Product.objects.get(id=product_id)
+    product = get_object_or_404(Product, id=product_id)
     Favorite.objects.get_or_create(user=request.user, product=product)
     return redirect("favorites_list")
 
+@login_required
 def favorites_list(request):
     favorites = Favorite.objects.filter(user=request.user)
     return render(request, "store/favorites.html", {"favorites": favorites})
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Product, Review
-
+# ------------------ Reviews ------------------
 @login_required
 def add_review(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -253,34 +200,14 @@ def add_review(request, product_id):
         comment = request.POST.get("comment")
 
         if rating and comment:
-            # Prevent duplicate reviews: one review per user per product
             existing_review = Review.objects.filter(product=product, user=request.user).first()
             if existing_review:
-                # Update the existing review instead of creating a new one
                 existing_review.rating = rating
                 existing_review.comment = comment
                 existing_review.save()
             else:
-                # Create a new review
-                Review.objects.create(
-                    product=product,
-                    user=request.user,
-                    rating=rating,
-                    comment=comment
-                )
+                Review.objects.create(product=product, user=request.user, rating=rating, comment=comment)
 
         return redirect("product_detail", product_id=product.id)
 
-    # If not POST, just redirect back
     return redirect("product_detail", product_id=product.id)
-
-
-from django.shortcuts import render, get_object_or_404
-from .models import Product
-
-def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    return render(request, "store/product_detail.html", {"product": product})
-
-
-

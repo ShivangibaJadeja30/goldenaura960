@@ -22,11 +22,18 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import Order
 
+from django.contrib import admin
+from .models import Order
+
+from django.contrib import admin
+from .models import Order
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "payment_method", "colored_status", "created_at")
-    list_filter = ("status", "payment_method")
-    actions = ["mark_as_paid", "mark_as_pending", "mark_as_cancelled"]
+    list_display = ("id", "user", "status", "created_at")
+    list_filter = ("status",)
+
+
 
     # Colored status display
     def colored_status(self, obj):

@@ -1,33 +1,193 @@
 {% extends "dashboard/dashboard_base.html" %}
+
 {% block title %}Dashboard Home{% endblock %}
+
 {% block content %}
-<h2>Welcome, {{ request.user.username }}</h2>
-<div class="row mt-4">
-  <div class="col-md-4">
-    <div class="card text-bg-primary mb-3">
-      <div class="card-body">
-        <h5 class="card-title">Total Orders</h5>
-        <p class="card-text">{{ stats.total_orders }}</p>
+  <h2 class="mb-4">Dashboard Overview</h2>
+
+  <!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-white bg-primary shadow-sm rounded">
+        <div class="card-body d-flex align-items-center">
+          <i class="fas fa-shopping-cart fa-2x me-3"></i>
+          <div>
+            <h6>Total Orders</h6>
+            <h3>{{ stats.total_orders }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-success shadow-sm rounded">
+        <div class="card-body d-flex align-items-center">
+          <i class="fas fa-dollar-sign fa-2x me-3"></i>
+          <div>
+            <h6>Total Revenue</h6>
+            <h3>{{ stats.total_revenue }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-warning shadow-sm rounded">
+        <div class="card-body d-flex align-items-center">
+          <i class="fas fa-star fa-2x me-3"></i>
+          <div>
+            <h6>Total Reviews</h6>
+            <h3>{{ stats.total_reviews }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-secondary shadow-sm rounded">
+        <div class="card-body d-flex align-items-center">
+          <i class="fas fa-users fa-2x me-3"></i>
+          <div>
+            <h6>Total Users</h6>
+            <h3>{{ user_data|length }}</h3>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card text-bg-success mb-3">
-      <div class="card-body">
-        <h5 class="card-title">Total Revenue</h5>
-        <p class="card-text">₹{{ stats.total_revenue }}</p>
+
+  <!-- Charts Row 1 -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm rounded">
+        <div class="card-header bg-info text-white">Favorites Snapshot</div>
+        <div class="card-body text-center">
+          <canvas id="favoritesPieChart" style="max-height:180px;"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm rounded">
+        <div class="card-header bg-primary text-white">Sales Trend</div>
+        <div class="card-body text-center">
+          <canvas id="salesMiniChart" style="max-height:180px;"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm rounded">
+        <div class="card-header bg-success text-white">Reviews Snapshot</div>
+        <div class="card-body text-center">
+          <canvas id="reviewsMiniChart" style="max-height:180px;"></canvas>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card text-bg-warning mb-3">
-      <div class="card-body">
-        <h5 class="card-title">Reviews</h5>
-        <p class="card-text">{{ stats.total_reviews }}</p>
+
+  <!-- Charts Row 2 -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm rounded">
+        <div class="card-header bg-secondary text-white">User Growth</div>
+        <div class="card-body text-center">
+          <canvas id="usersLineChart" style="max-height:200px;"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm rounded">
+        <div class="card-header bg-dark text-white">User Activity</div>
+        <div class="card-body text-center">
+          <canvas id="userActivityChart" style="max-height:200px;"></canvas>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- Chart.js Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Favorites Doughnut Chart
+    const favoritesData = {{ favorite_data|safe }};
+    new Chart(document.getElementById('favoritesPieChart'), {
+      type: 'doughnut',
+      data: {
+        labels: favoritesData.map(item => item["product__name"]),
+        datasets: [{
+          data: favoritesData.map(item => item.count),
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)'
+          ]
+        }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // Sales Line Chart
+    const salesData = {{ sales_data|safe }};
+    new Chart(document.getElementById('salesMiniChart'), {
+      type: 'line',
+      data: {
+        labels: salesData.map(item => String(item["created_at__date"])),
+        datasets: [{
+          label: 'Orders',
+          data: salesData.map(item => item.count),
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+
+    // Reviews Bar Chart
+    const reviewData = {{ review_data|safe }};
+    new Chart(document.getElementById('reviewsMiniChart'), {
+      type: 'bar',
+      data: {
+        labels: reviewData.map(item => item["product__name"]),
+        datasets: [{
+          label: 'Reviews',
+          data: reviewData.map(item => item.count),
+          backgroundColor: 'rgba(75, 192, 192, 0.7)'
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+
+    // User Growth Line Chart
+    const userData = {{ user_data|safe }};
+    new Chart(document.getElementById('usersLineChart'), {
+      type: 'line',
+      data: {
+        labels: userData.map(item => String(item["date_joined__date"])),
+        datasets: [{
+          label: 'New Users',
+          data: userData.map(item => item.count),
+          borderColor: 'rgba(153, 102, 255, 1)',
+          backgroundColor: 'rgba(153, 102, 255, 0.2)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+
+    // User Activity Pie Chart
+    const activeUsers = {{ active_users }};
+    const inactiveUsers = {{ inactive_users }};
+    new Chart(document.getElementById('userActivityChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Active', 'Inactive'],
+        datasets: [{
+          data: [activeUsers, inactiveUsers],
+          backgroundColor: ['rgba(40, 167, 69, 0.7)', 'rgba(220, 53, 69, 0.7)']
+        }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+  </script>
 {% endblock %}
-
-

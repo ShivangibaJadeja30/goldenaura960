@@ -1,42 +1,108 @@
 {% extends "dashboard/dashboard_base.html" %}
+
 {% block title %}Analytics{% endblock %}
+
 {% block content %}
-<h2>Analytics Dashboard</h2>
-<div class="row">
-  <div class="col-md-6">
-    <canvas id="salesChart"></canvas>
-  </div>
-  <div class="col-md-6">
-    <canvas id="reviewsChart"></canvas>
-  </div>
-</div>
+  <h2 class="mb-4">Analytics Dashboard</h2>
 
-<!-- Load Chart.js -->
+  <div class="row">
+    <!-- Sales Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-primary text-white">Sales Trends</div>
+        <div class="card-body">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-success text-white">Reviews Count</div>
+        <div class="card-body">
+          <canvas id="reviewsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Favorites Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-info text-white">Top Favorites</div>
+        <div class="card-body">
+          <canvas id="favoritesChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-  // Initialize chart objects
-  const salesCtx = document.getElementById('salesChart');
-  const salesChart = new Chart(salesCtx, {
-    type: 'line',
-    data: { labels: [], datasets: [{ label: 'Sales', data: [], borderColor: '#28a745', fill: false }] }
-  });
+  // Sales Chart
+  fetch("/dashboard/api/sales-data/")
+    .then(response => response.json())
+    .then(salesData => {
+      const salesCtx = document.getElementById('salesChart').getContext('2d');
+      new Chart(salesCtx, {
+        type: 'line',
+        data: {
+          labels: salesData.map(item => item.created_at__date),
+          datasets: [{
+            label: 'Orders',
+            data: salesData.map(item => item.count),
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            fill: true
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    });
 
-  const reviewsCtx = document.getElementById('reviewsChart');
-  const reviewsChart = new Chart(reviewsCtx, {
-    type: 'bar',
-    data: { labels: [], datasets: [{ label: 'Reviews', data: [], backgroundColor: '#ffc107' }] }
-  });
+  // Reviews Chart
+  fetch("/dashboard/api/review-data/")
+    .then(response => response.json())
+    .then(reviewData => {
+      const reviewCtx = document.getElementById('reviewsChart').getContext('2d');
+      new Chart(reviewCtx, {
+        type: 'bar',
+        data: {
+          labels: reviewData.map(item => item.product__name),
+          datasets: [{
+            label: 'Reviews',
+            data: reviewData.map(item => item.count),
+            backgroundColor: 'rgba(75, 192, 192, 0.6)'
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    });
 
-  // 🔹 Add your async function here
-  async function loadSalesData() {
-    const response = await fetch("{% url 'sales_data_api' %}");
-    const data = await response.json();
-    salesChart.data.labels = data.map(d => d.created_at);
-    salesChart.data.datasets[0].data = data.map(d => d.total);
-    salesChart.update();
-  }
-
-  setInterval(loadSalesData, 5000); // refresh every 5 seconds
+  // Favorites Chart
+  fetch("/dashboard/api/favorite-data/")
+    .then(response => response.json())
+    .then(favoritesData => {
+      console.log(favoritesData); // Debug in browser console
+      const favCtx = document.getElementById('favoritesChart').getContext('2d');
+      new Chart(favCtx, {
+        type: 'bar',
+        data: {
+          labels: favoritesData.map(item => item["product__name"]),
+          datasets: [{
+            label: 'Favorites',
+            data: favoritesData.map(item => item.count),
+            backgroundColor: 'rgba(255, 99, 132, 0.6)'
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    });
 </script>
+
 {% endblock %}
