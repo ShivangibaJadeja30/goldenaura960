@@ -2,23 +2,25 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.contrib import messages
-from django.db.models import Count
-from store.models import Order, Review
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum
-from django.contrib.auth.models import User
 from store.models import Order, Review, Favorite
+from django.contrib.auth.models import User
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 @login_required
 def dashboard_home(request):
+    # Calculate revenue manually to avoid ManyToMany aggregate join quirks
+    total_revenue = sum(
+        sum(product.price for product in order.products.all())
+        for order in Order.objects.exclude(status="Cancelled")
+    )
+    
     stats = {
-    "total_orders": Order.objects.count(),
-    "total_revenue": 0,  # placeholder until you add a field
-    "total_reviews": Review.objects.count(),
-}
-
+        "total_orders": Order.objects.count(),
+        "total_revenue": total_revenue,
+        "total_reviews": Review.objects.count(),
+    }
 
     # ... rest of your analytics code ...
 
@@ -29,6 +31,7 @@ def dashboard_home(request):
         .annotate(count=Count("id"))
         .order_by("created_at__date")
     )
+    sales_json = json.dumps(list(sales_data), cls=DjangoJSONEncoder)
 
     # Review data
     review_data = (
@@ -36,6 +39,7 @@ def dashboard_home(request):
         .annotate(count=Count("id"))
         .order_by("-count")
     )
+    review_json = json.dumps(list(review_data), cls=DjangoJSONEncoder)
 
     # Favorites data
     favorite_data = (
@@ -43,6 +47,7 @@ def dashboard_home(request):
         .annotate(count=Count("id"))
         .order_by("-count")
     )
+    favorite_json = json.dumps(list(favorite_data), cls=DjangoJSONEncoder)
 
     # User growth data
     user_data = (
@@ -50,6 +55,7 @@ def dashboard_home(request):
         .annotate(count=Count("id"))
         .order_by("date_joined__date")
     )
+    user_json = json.dumps(list(user_data), cls=DjangoJSONEncoder)
 
     # Active vs inactive users
     active_users = User.objects.filter(last_login__isnull=False).count()
@@ -57,10 +63,10 @@ def dashboard_home(request):
 
     return render(request, "dashboard/home.html", {
         "stats": stats,
-        "sales_data": list(sales_data),
-        "review_data": list(review_data),
-        "favorite_data": list(favorite_data),
-        "user_data": list(user_data),
+        "sales_data": sales_json,
+        "review_data": review_json,
+        "favorite_data": favorite_json,
+        "user_data": user_json,
         "active_users": active_users,
         "inactive_users": inactive_users,
     })
@@ -72,6 +78,12 @@ def dashboard_home(request):
 def order_list(request):
     orders = Order.objects.all().order_by("-created_at")
     return render(request, "dashboard/orders.html", {"orders": orders})
+
+@login_required
+def generate_bill(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    total = sum(product.price for product in order.products.all())
+    return render(request, "store/invoice.html", {"order": order, "total": total})
 
 # ---------------- Analytics ----------------
 @login_required

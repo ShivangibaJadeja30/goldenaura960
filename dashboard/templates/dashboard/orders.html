@@ -32,6 +32,7 @@
               <button type="submit" name="status" value="Pending" class="btn btn-sm btn-warning">Mark Pending</button>
               <button type="submit" name="status" value="Failed" class="btn btn-sm btn-danger">Mark Failed</button>
             </form>
+            <a href="{% url 'dashboard_generate_bill' order.id %}" target="_blank" class="btn btn-sm btn-outline-primary ml-2">Print Bill</a>
           </td>
         </tr>
       {% empty %}

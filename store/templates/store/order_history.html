@@ -30,7 +30,9 @@
 
 
         <!-- Products in Order -->
-
+        <a href="{% url 'generate_invoice' order.id %}" target="_blank" class="btn btn-outline-primary mt-3">
+          <i class="fas fa-file-invoice"></i> Download Invoice
+        </a>
       </div>
     </div>
   {% empty %}

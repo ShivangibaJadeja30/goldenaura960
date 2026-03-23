@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ order.id }}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+        .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); font-size: 16px; line-height: 24px; border-radius: 8px;}
+        .invoice-box table { width: 100%; text-align: left; border-collapse: collapse; }
+        .invoice-box table td { padding: 5px; vertical-align: top; }
+        .title { font-size: 40px; font-weight: bold; color: #d4af37; } /* Golden color */
+        .information td { padding-bottom: 40px; }
+        .header { background: #f8f9fa; border-bottom: 2px solid #ddd; font-weight: bold; }
+        .item td { border-bottom: 1px solid #eee; padding: 15px 5px !important;}
+        .total td { font-weight: bold; border-top: 2px solid #333; padding-top: 15px; font-size: 1.2em;}
+        .print-btn { display: block; width: 180px; margin: 30px auto; padding: 12px; text-align: center; background: #000; color: white; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: bold;}
+        .print-btn:hover { background: #333; }
+        @media print {
+            .print-btn { display: none; }
+            body { padding: 0; box-shadow: none; background: white;}
+            .invoice-box { border: none; box-shadow: none; max-width: 100%; margin: 0; padding: 0;}
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-box">
+        <table cellpadding="0" cellspacing="0">
+            <tr class="top">
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td class="title">GoldenAura</td>
+                            <td style="text-align: right;">
+                                <strong>Invoice #:</strong> {{ order.id }}<br>
+                                <strong>Date:</strong> {{ order.created_at|date:"M d, Y" }}<br>
+                                <strong>Status:</strong> {{ order.status }}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr class="information">
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td>
+                                GoldenAura, Inc.<br>
+                                Fashion Street<br>
+                                Surat, GA 395007
+                            </td>
+                            <td style="text-align: right;">
+                                <strong>Billed To:</strong><br>
+                                {{ order.user.username }}<br>
+                                {% if order.user.email %}{{ order.user.email }}{% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr class="heading">
+                <td class="header" style="padding: 10px;">Payment Method</td>
+                <td class="header" style="text-align: right; padding: 10px;">Payment Status</td>
+            </tr>
+            <tr class="details">
+                <td style="padding: 10px; margin-bottom: 20px; display: block;">{{ order.payment_method }}</td>
+                <td style="text-align: right; padding: 10px;">
+                    {% if order.status == 'Pending' %}Unpaid{% else %}Paid/Processed{% endif %}
+                </td>
+            </tr>
+            <tr class="heading">
+                <td class="header" style="padding: 10px; margin-top: 20px;">Item Description</td>
+                <td class="header" style="text-align: right; padding: 10px;">Price</td>
+            </tr>
+            {% for product in order.products.all %}
+            <tr class="item">
+                <td style="padding: 10px;">{{ product.name }}</td>
+                <td style="text-align: right; padding: 10px;">₹{{ product.price }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total">
+                <td></td>
+                <td style="text-align: right; padding: 10px;">
+                    Total: ₹{{ total }}
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <button class="print-btn" onclick="window.print()">Print / Download PDF</button>
+</body>
+</html>

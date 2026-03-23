@@ -132,6 +132,12 @@ def order_history(request):
     orders = Order.objects.filter(user=request.user).order_by("-created_at")
     return render(request, "store/order_history.html", {"orders": orders})
 
+@login_required
+def generate_invoice(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    # Calculate total and prepare items if needed
+    total = sum(product.price for product in order.products.all())
+    return render(request, "store/invoice.html", {"order": order, "total": total})
 
 
 # ------------------ Auth ------------------
@@ -167,12 +173,16 @@ def contact(request):
             if request.user.is_authenticated:
                 feedback.user = request.user
             feedback.save()
-            send_mail(
-                "New Feedback Received",
-                feedback.message,
-                settings.DEFAULT_FROM_EMAIL,
-                ["admin@example.com"],
-            )
+            try:
+                send_mail(
+                    "New Feedback Received",
+                    feedback.message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    ["admin@example.com"],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
             return render(request, "store/contact_success.html")
     else:
         form = FeedbackForm()
