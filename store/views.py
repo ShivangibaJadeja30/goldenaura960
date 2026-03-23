@@ -34,9 +34,44 @@ def profile(request):
 
 # ------------------ Search ------------------
 def search_results(request):
-    query = request.GET.get('q')
-    results = Product.objects.filter(name__icontains=query)
-    return render(request, 'store/search_results.html', {'query': query, 'results': results})
+    query = request.GET.get('q', '')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    category_id = request.GET.get('category')
+
+    results = Product.objects.all()
+
+    if query:
+        results = results.filter(name__icontains=query)
+
+    if min_price:
+        try:
+            results = results.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+
+    if max_price:
+        try:
+            results = results.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+
+    if category_id:
+        try:
+            results = results.filter(category_id=int(category_id))
+        except ValueError:
+            pass
+
+    categories = Category.objects.all()
+
+    return render(request, 'store/search_results.html', {
+        'query': query,
+        'results': results,
+        'categories': categories,
+        'min_price': min_price,
+        'max_price': max_price,
+        'selected_category': category_id
+    })
 
 # ------------------ Home ------------------
 def home(request):
