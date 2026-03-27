@@ -256,3 +256,19 @@ def add_review(request, product_id):
         return redirect("product_detail", product_id=product.id)
 
     return redirect("product_detail", product_id=product.id)
+
+# ------------------ Order Tracking ------------------
+def track_order(request):
+    order = None
+    error = None
+    if request.method == "POST":
+        order_id = request.POST.get("order_id")
+        if order_id:
+            try:
+                order = Order.objects.get(id=order_id)
+            except Order.DoesNotExist:
+                error = "Order not found. Please check your Order ID."
+            except ValueError:
+                error = "Invalid Order ID format."
+
+    return render(request, "store/track_order.html", {"order": order, "error": error})

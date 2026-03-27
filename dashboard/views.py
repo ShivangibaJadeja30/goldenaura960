@@ -74,12 +74,12 @@ def dashboard_home(request):
 
 
 # ---------------- Orders ----------------
-@login_required
+@user_passes_test(lambda u: u.is_staff)
 def order_list(request):
     orders = Order.objects.all().order_by("-created_at")
     return render(request, "dashboard/orders.html", {"orders": orders})
 
-@login_required
+@user_passes_test(lambda u: u.is_staff)
 def generate_bill(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     total = sum(product.price for product in order.products.all())
@@ -141,7 +141,7 @@ def edit_review(request, review_id):
 
 from django.views.decorators.http import require_POST
 
-@login_required
+@staff_required
 @require_POST
 def update_order_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -191,5 +191,98 @@ def favorite_data_api(request):
 
 
 
+# ---------------- Catalog Management ----------------
+from .forms import CategoryForm, ProductForm
+from store.models import Category, Product, Feedback
 
+@staff_required
+def category_list(request):
+    items = Category.objects.all()
+    return render(request, "dashboard/catalog_list.html", {"title": "Categories", "items": items, "type": "category"})
 
+@staff_required
+def category_create(request):
+    if request.method == "POST":
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Category created successfully.")
+            return redirect("dashboard_category_list")
+    else:
+        form = CategoryForm()
+    return render(request, "dashboard/catalog_form.html", {"title": "Create Category", "form": form})
+
+@staff_required
+def category_update(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == "POST":
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Category updated successfully.")
+            return redirect("dashboard_category_list")
+    else:
+        form = CategoryForm(instance=category)
+    return render(request, "dashboard/catalog_form.html", {"title": "Edit Category", "form": form})
+
+@staff_required
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == "POST":
+        category.delete()
+        messages.success(request, "Category deleted successfully.")
+        return redirect("dashboard_category_list")
+    return render(request, "dashboard/catalog_confirm_delete.html", {"title": "Delete Category", "item": category, "cancel_url": "dashboard_category_list"})
+
+@staff_required
+def product_list(request):
+    items = Product.objects.all()
+    return render(request, "dashboard/catalog_list.html", {"title": "Products", "items": items, "type": "product"})
+
+@staff_required
+def product_create(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product created successfully.")
+            return redirect("dashboard_product_list")
+    else:
+        form = ProductForm()
+    return render(request, "dashboard/catalog_form.html", {"title": "Create Product", "form": form})
+
+@staff_required
+def product_update(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product updated successfully.")
+            return redirect("dashboard_product_list")
+    else:
+        form = ProductForm(instance=product)
+    return render(request, "dashboard/catalog_form.html", {"title": "Edit Product", "form": form})
+
+@staff_required
+def product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        product.delete()
+        messages.success(request, "Product deleted successfully.")
+        return redirect("dashboard_product_list")
+    return render(request, "dashboard/catalog_confirm_delete.html", {"title": "Delete Product", "item": product, "cancel_url": "dashboard_product_list"})
+
+@staff_required
+def feedback_list(request):
+    feedbacks = Feedback.objects.select_related("user").all().order_by("-created_at")
+    return render(request, "dashboard/feedback_list.html", {"feedbacks": feedbacks})
+
+@staff_required
+def feedback_delete(request, pk):
+    feedback = get_object_or_404(Feedback, pk=pk)
+    if request.method == "POST":
+        feedback.delete()
+        messages.success(request, "Feedback deleted successfully.")
+        return redirect("dashboard_feedback_list")
+    return render(request, "dashboard/catalog_confirm_delete.html", {"title": "Delete Feedback", "item": feedback, "cancel_url": "dashboard_feedback_list"})

@@ -1,0 +1,60 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Track Order - GoldenAura 960{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 mt-5">
+      <div class="card-body p-5 text-center">
+        <h2 class="mb-4" style="color: gold; text-shadow: 1px 1px 2px black;">Track Your Order</h2>
+        <p class="text-muted mb-4">Enter your Order ID below to check the current shipping status of your jewelry.</p>
+        
+        <form method="POST">
+          {% csrf_token %}
+          <div class="input-group mb-3 pb-3">
+            <span class="input-group-text bg-black text-warning border-black"><i class="fas fa-box"></i></span>
+            <input type="text" name="order_id" class="form-control border-black" placeholder="Order ID (e.g., 102)" required>
+            <button class="btn btn-gold px-4" type="submit">Track</button>
+          </div>
+        </form>
+
+        {% if error %}
+          <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+
+        {% if order %}
+          <hr class="my-4">
+          <h4 class="mb-3">Order #{{ order.id }} Details</h4>
+          <div class="text-start p-3 bg-light rounded border">
+            <p><strong>Status:</strong> 
+              {% if order.status == 'Pending' %}
+                <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> {{ order.status }}</span>
+              {% elif order.status == 'Shipped' %}
+                <span class="badge bg-info text-dark"><i class="fas fa-truck"></i> {{ order.status }}</span>
+              {% elif order.status == 'Delivered' %}
+                <span class="badge bg-success"><i class="fas fa-check-circle"></i> {{ order.status }}</span>
+              {% elif order.status == 'Paid' %}
+                <span class="badge bg-primary"><i class="fas fa-receipt"></i> Processing</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ order.status }}</span>
+              {% endif %}
+            </p>
+            <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+            <p><strong>Date Placed:</strong> {{ order.created_at|date:"M d, Y" }}</p>
+            
+            <h5 class="mt-4 mb-2 border-bottom pb-2">Items</h5>
+            <ul class="list-unstyled">
+              {% for product in order.products.all %}
+                <li class="mb-2">
+                  <i class="fas fa-gem text-warning me-2"></i> {{ product.name }} - ₹{{ product.price }}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

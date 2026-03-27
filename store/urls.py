@@ -14,6 +14,7 @@ urlpatterns = [
     path("cart/remove/<int:cart_id>/", views.remove_from_cart, name="remove_from_cart"),
     path("checkout/", views.checkout, name="checkout"),
     path("orders/", views.order_history, name="order_history"),
+    path("track-order/", views.track_order, name="track_order"),
     path("orders/<int:order_id>/invoice/", views.generate_invoice, name="generate_invoice"),
     path("account/", views.login_signup, name="login_signup"),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),

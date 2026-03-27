@@ -1,22 +1,124 @@
 {% extends "store/base.html" %}
-{% block title %}Login / Signup{% endblock %}
+
+{% block title %}Welcome - GoldenAura 960{% endblock %}
+
 {% block content %}
-<div class="row">
-  <div class="col-md-6">
-    <h3>Login</h3>
-    <form method="post">
-      {% csrf_token %}
-      {{ login_form.as_p }}
-      <button type="submit" name="login" class="btn btn-gold">Login</button>
-    </form>
-  </div>
-  <div class="col-md-6">
-    <h3>Signup</h3>
-    <form method="post">
-      {% csrf_token %}
-      {{ signup_form.as_p }}
-      <button type="submit" name="signup" class="btn btn-gold">Signup</button>
-    </form>
+<style>
+  /* Base page background overrides for this specific page */
+  body {
+    background: url('https://images.unsplash.com/photo-1599643478514-46f140fb0db0?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed !important;
+    background-size: cover !important;
+  }
+
+  .glass-card {
+    background: rgb(0, 0, 0);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  }
+
+  .glass-card h4 {
+    color: gold;
+    text-shadow: 1px 1px 2px black;
+  }
+
+  /* Styling form inputs inside the glass card */
+  .glass-card input,
+  .glass-card select,
+  .glass-card textarea {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #555;
+    color: #000;
+  }
+
+  .glass-card input:focus {
+    background: #fff;
+    border-color: gold;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+  }
+
+  /* Nav tabs styling for the popup dialog */
+  .nav-tabs .nav-link {
+    color: #ccc;
+    font-weight: bold;
+    border: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-tabs .nav-link:hover {
+    color: gold;
+    border-color: transparent;
+  }
+
+  .nav-tabs .nav-link.active {
+    background: transparent;
+    color: gold;
+    border-bottom: 2px solid gold;
+  }
+
+  label {
+    font-weight: bold;
+    color: #f8f9fa;
+    margin-top: 10px;
+  }
+</style>
+
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+  <div class="col-md-5">
+
+    <div class="card glass-card p-4 mx-auto my-4">
+      <div class="text-center mb-4 mt-2">
+        <h2 style="color: gold; font-weight: bold; text-shadow: 2px 2px 4px #000;"><i class="fas fa-gem"></i> GoldenAura
+        </h2>
+        <p class="text-light small">Exclusive Virtual Jewellery Store</p>
+      </div>
+
+      <!-- Nav Tabs -->
+      <ul class="nav nav-tabs justify-content-center mb-4" id="loginSignupTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button"
+            role="tab" aria-controls="login" aria-selected="true">Login</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup" type="button"
+            role="tab" aria-controls="signup" aria-selected="false">Sign Up</button>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content" id="loginSignupTabsContent">
+        <!-- Login Tab -->
+        <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+          <h4 class="mb-3 text-center">Welcome Back</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ login_form.as_p }}
+            <div class="d-grid mt-4 mb-2">
+              <button type="submit" name="login" class="btn btn-gold py-2 fw-bold" style="font-size: 1.1rem;">Login to
+                Account</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Signup Tab -->
+        <div class="tab-pane fade" id="signup" role="tabpanel" aria-labelledby="signup-tab">
+          <h4 class="mb-3 text-center">Create an Account</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ signup_form.as_p }}
+            <div class="d-grid mt-4 mb-2">
+              <button type="submit" name="signup" class="btn btn-gold py-2 fw-bold" style="font-size: 1.1rem;">Create
+                Account</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div> <!-- /card -->
+
   </div>
 </div>
 {% endblock %}

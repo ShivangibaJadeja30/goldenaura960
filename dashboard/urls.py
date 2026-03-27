@@ -14,7 +14,18 @@ urlpatterns = [
     path("orders/<int:order_id>/bill/", views.generate_bill, name="dashboard_generate_bill"),
     path("api/favorite-data/", views.favorite_data_api, name="favorite_data_api"),
 
+    # Catalog Management
+    path("categories/", views.category_list, name="dashboard_category_list"),
+    path("categories/create/", views.category_create, name="dashboard_category_create"),
+    path("categories/<int:pk>/edit/", views.category_update, name="dashboard_category_edit"),
+    path("categories/<int:pk>/delete/", views.category_delete, name="dashboard_category_delete"),
 
-    ]
+    path("products/", views.product_list, name="dashboard_product_list"),
+    path("products/create/", views.product_create, name="dashboard_product_create"),
+    path("products/<int:pk>/edit/", views.product_update, name="dashboard_product_edit"),
+    path("products/<int:pk>/delete/", views.product_delete, name="dashboard_product_delete"),
 
-
+    # User Interactions
+    path("feedbacks/", views.feedback_list, name="dashboard_feedback_list"),
+    path("feedbacks/<int:pk>/delete/", views.feedback_delete, name="dashboard_feedback_delete"),
+]

@@ -25,12 +25,17 @@
           <td>{{ order.payment_method }}</td>
           <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
           <td>
-            <!-- Buttons to change payment status -->
-            <form method="post" action="{% url 'update_order_status' order.id %}" style="display:inline;">
+            <!-- Dropdown to change order tracking status -->
+            <form method="post" action="{% url 'update_order_status' order.id %}" class="d-inline-flex align-items-center">
               {% csrf_token %}
-              <button type="submit" name="status" value="Paid" class="btn btn-sm btn-success">Mark Paid</button>
-              <button type="submit" name="status" value="Pending" class="btn btn-sm btn-warning">Mark Pending</button>
-              <button type="submit" name="status" value="Failed" class="btn btn-sm btn-danger">Mark Failed</button>
+              <select name="status" class="form-select form-select-sm me-2" style="width: 120px;">
+                <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Paid" {% if order.status == 'Paid' %}selected{% endif %}>Paid</option>
+                <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+              <button type="submit" class="btn btn-sm btn-dark">Update</button>
             </form>
             <a href="{% url 'dashboard_generate_bill' order.id %}" target="_blank" class="btn btn-sm btn-outline-primary ml-2">Print Bill</a>
           </td>
